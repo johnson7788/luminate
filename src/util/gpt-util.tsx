@@ -374,15 +374,14 @@ export async function getKeyTextBasedOnDimension(kvPairs, text) {
     valReq += `${kvPairs[i]['dimension']} : ${kvPairs[i]['value']}`
   }
 
-  const message = `list up to 3 excerpts of the text that reflect the dimension: ${valReq}  
+  const message = `列出提供的文本内容的最多3个反映维度: ${valReq}  
   ####
-  the story is: ${text}
+  故事是: ${text}
   ####
-  Don't include any text other than the json
-  Don't show Answer at the beginning of the response
+  不要包含除JSON以外的任何文本
+  不要在回复的开头显示“Answer”
   ####
-  answer in the following JSON format: 
-
+  使用以下JSON格式回答：
   {
       "1": "<original text 1>", 
       "2": "<original text 2>", 

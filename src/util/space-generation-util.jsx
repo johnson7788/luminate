@@ -22,24 +22,24 @@ let firstId = '';
 
 async function editorBackgroundPrompt() {
     //该函数从 useEditorStore 获取编辑器的当前状态，并提取最后一个块的内容作为“上下文”。
-// 根据上下文的存在情况，生成一个背景信息，并返回给调用者。
-// 如果上下文和前一个内容都存在，则将它们组合起来。
-    let context=""; // FIXME: unknown context
-    const {api} = useEditorStore.getState();
+    // 根据上下文的存在情况，生成一个背景信息，并返回给调用者。
+    // 如果上下文和前一个内容都存在，则将它们组合起来。
+    let context = ""; // FIXME: unknown context
+    const { api } = useEditorStore.getState();
     const ejData = await api.save();
     // get the last block
     let prevContext;
-    if (ejData.blocks.length === 0 ){
+    if (ejData.blocks.length === 0) {
         prevContext = "";
     } else {
         prevContext = ejData.blocks[ejData.blocks.length - 1].data.text;
     }
     let background = "";
-    if (prevContext != "" && context != ""){
+    if (prevContext != "" && context != "") {
         background = `(${prevContext}) AND (${context})`;
-    } else if (prevContext != "" && context == ""){
+    } else if (prevContext != "" && context == "") {
         background = prevContext;
-    } else if (prevContext == "" && context != ""){
+    } else if (prevContext == "" && context != "") {
         background = context;
     }
     return background !== "" ? "This is the context:\n" + background + "\n---end context ---\n\n" : "";
@@ -55,7 +55,7 @@ async function editorBackgroundPrompt() {
     concatenate the string with the prompt
     use the OpenAI API to generate a response 
 */
-export async function buildSpace(currBlockId, dimensions, numResponses, prompt, context){
+export async function buildSpace(currBlockId, dimensions, numResponses, prompt, context) {
     let { dimReqs, data } = genDimRequirements(dimensions, numResponses);
     const { api } = useEditorStore.getState();
     const { maxBlockId, setMaxBlockId } = useCurrStore.getState();
@@ -67,14 +67,14 @@ export async function buildSpace(currBlockId, dimensions, numResponses, prompt, 
         return Promise.all(reqs.map(async (req) => {
             try {
                 const id = req["ID"];
-                const wordLimit = "Limit the response to 150 words.\n####\n";
+                const wordLimit = "使用中文回答，并且回答在150个字以内。\n####\n";
                 const requirements = req["Requirements"];
                 const message = `${wordLimit}${editorBackgroundPrompt()} Prompt: ${prompt}\n####\nRequirements: ${requirements}`;
                 const response = await generateResponse(message);
                 const trimmedResponse = response.trim();
                 const summary = await abstraction(trimmedResponse);
 
-                if (id === useResponseStore.getState().responseId){
+                if (id === useResponseStore.getState().responseId) {
                     useResponseStore.getState().setResponse(response);
                 }
 
@@ -115,16 +115,16 @@ export async function buildSpace(currBlockId, dimensions, numResponses, prompt, 
     setCurrBlockId(currBlockId);
     setMaxBlockId(maxBlockId + 1);
 
-    return {"fail_count": fail_count, "total_count": total_count};
+    return { "fail_count": fail_count, "total_count": total_count };
 }
 
 /**
  * Given the current state of the nodes, selected dimension labels, generate more nodes in that space.
  * labels: Label[] -> {dimensionId, name, type}[]
  */
-export async function growSpace(currBlockId, dimensionMap, labels, numResponses, prompt, nodeMap, setNodeMap){
+export async function growSpace(currBlockId, dimensionMap, labels, numResponses, prompt, nodeMap, setNodeMap) {
     // generate a list of requirements for each dimension
-    let {dimReqs, data} = genFilteredDimRequirements(dimensionMap, numResponses);
+    let { dimReqs, data } = genFilteredDimRequirements(dimensionMap, numResponses);
     // let {dimReqs, data} = genLabelRequirements(dimensionMap, labels, numResponses);
     // generate a response for each requirement
     const startTime = Date.now();
@@ -133,7 +133,7 @@ export async function growSpace(currBlockId, dimensionMap, labels, numResponses,
     const responsePromises = dimReqs.map(async (req) => {
         // parse req to get id and requirements
         const id = req["ID"];
-        const wordLimit = "Limit the response to 150 words.\n\n"
+        const wordLimit = "使用中文回答，并且回答在150个字以内。\n\n"
         const requirements = req["Requirements"];
         const message = wordLimit + editorBackgroundPrompt() + "Prompt: " + prompt + "\n" + DELIMITER + "\n" + "Requirements: " + requirements + "\n" + DELIMITER + "\n";
         // Call the generateResponse function to generate a response for each requirement
@@ -157,49 +157,49 @@ export async function growSpace(currBlockId, dimensionMap, labels, numResponses,
         ...data,
     })
     DatabaseManager.addBatchData(currBlockId, data);
-    return {"fail_count": fail_count, "total_count": total_count};
+    return { "fail_count": fail_count, "total_count": total_count };
 }
 
 export async function addLabelToSpace(dimensionMap, newLabel, numResponses, prompt, nodeMap, setNodeMap) {
-        // generate a list of requirements for each dimension
-        let {dimReqs, data} = genLabelDimRequirements(dimensionMap, newLabel, numResponses);
-        // let {dimReqs, data} = genLabelRequirements(dimensionMap, labels, numResponses);
-        const {maxBlockId, setMaxBlockId} = useCurrStore.getState();
-        // generate a response for each requirement
-        const startTime = Date.now();
-        let responses = [];
-        console.log("dimReqs", dimReqs);
-        const responsePromises = dimReqs.map(async (req) => {
-            // parse req to get id and requirements
-            const id = req["ID"];
-            const wordLimit = "Limit the response to 150 words.\n####\n"
-            const requirements = req["Requirements"];
-            const message = wordLimit + editorBackgroundPrompt() + "Prompt: " + prompt + "\n" + DELIMITER + "\n" + "Requirements: " + requirements + "\n" + DELIMITER + "\n";
-            // Call the generateResponse function to generate a response for each requirement
-            const response = await generateResponse(message);
-            // store the response in the data
-            // let data: ResponseData = {};
-            data[id]["Prompt"] = message;
-            data[id]["Result"] = response;
-            const summary = await abstraction(response);
-            data[id]["Summary"] = summary["Summary"];
-            data[id]["Keywords"] = summary["Key Words"];
-            data[id]["Structure"] = summary["Structure"];
-            data[id]["Title"] = summary["Title"];
-            data[id]["IsMyFav"] = false;
-        });
-        await Promise.all(responsePromises);
-        const endTime = Date.now();
-        console.log("Time to generate " + numResponses + " responses: " + (endTime - startTime) + "ms");
-        console.log(data);
-    
-        setNodeMap({
-            ...nodeMap,
-            ...data,
-        })
-        const {currBlockId} = useCurrStore.getState();
-        DatabaseManager.addBatchData(currBlockId, data);
-        return {"fail_count": fail_count, "total_count": total_count};
+    // generate a list of requirements for each dimension
+    let { dimReqs, data } = genLabelDimRequirements(dimensionMap, newLabel, numResponses);
+    // let {dimReqs, data} = genLabelRequirements(dimensionMap, labels, numResponses);
+    const { maxBlockId, setMaxBlockId } = useCurrStore.getState();
+    // generate a response for each requirement
+    const startTime = Date.now();
+    let responses = [];
+    console.log("dimReqs", dimReqs);
+    const responsePromises = dimReqs.map(async (req) => {
+        // parse req to get id and requirements
+        const id = req["ID"];
+        const wordLimit = "使用中文回答，并且回答在150个字以内。\n####\n"
+        const requirements = req["Requirements"];
+        const message = wordLimit + editorBackgroundPrompt() + "Prompt: " + prompt + "\n" + DELIMITER + "\n" + "Requirements: " + requirements + "\n" + DELIMITER + "\n";
+        // Call the generateResponse function to generate a response for each requirement
+        const response = await generateResponse(message);
+        // store the response in the data
+        // let data: ResponseData = {};
+        data[id]["Prompt"] = message;
+        data[id]["Result"] = response;
+        const summary = await abstraction(response);
+        data[id]["Summary"] = summary["Summary"];
+        data[id]["Keywords"] = summary["Key Words"];
+        data[id]["Structure"] = summary["Structure"];
+        data[id]["Title"] = summary["Title"];
+        data[id]["IsMyFav"] = false;
+    });
+    await Promise.all(responsePromises);
+    const endTime = Date.now();
+    console.log("Time to generate " + numResponses + " responses: " + (endTime - startTime) + "ms");
+    console.log(data);
+
+    setNodeMap({
+        ...nodeMap,
+        ...data,
+    })
+    const { currBlockId } = useCurrStore.getState();
+    DatabaseManager.addBatchData(currBlockId, data);
+    return { "fail_count": fail_count, "total_count": total_count };
 }
 
 /**
@@ -211,15 +211,15 @@ export async function addLabelToSpace(dimensionMap, newLabel, numResponses, prom
  * Given the current state of the nodes, selected dimension labels, generate more nodes in that space.
  * labels: Label[] -> {dimensionId, name, type}[]
  */
-export async function addSimilarNodesToSpace(node, nodeMap, setNodeMap){
+export async function addSimilarNodesToSpace(node, nodeMap, setNodeMap) {
     // generate a response for each requirement
     const startTime = Date.now();
     const data = {};
     // let data: ResponseData = {};
-    const responsePromises = [0,1,2,3,4].map(async (i) => {
+    const responsePromises = [0, 1, 2, 3, 4].map(async (i) => {
         // parse req to get id and requirements
         const id = uuid();
-        const wordLimit = "Limit the response to 150 words.\n\n"
+        const wordLimit = "使用中文回答，并且回答在150个字以内。\n\n"
         const message = wordLimit + editorBackgroundPrompt() + "Prompt: " + node.Prompt;
         // Call the generateResponse function to generate a response for each requirement
         const response = await generateResponse(message);
@@ -245,41 +245,41 @@ export async function addSimilarNodesToSpace(node, nodeMap, setNodeMap){
         ...nodeMap,
         ...data,
     })
-    const {currBlockId} = useCurrStore.getState();
+    const { currBlockId } = useCurrStore.getState();
     DatabaseManager.addBatchData(currBlockId, data);
-    return {"fail_count": fail_count, "total_count": total_count};
+    return { "fail_count": fail_count, "total_count": total_count };
 }
 
 
-async function generateResponse(message){
+async function generateResponse(message) {
     // 调用 OpenAI API：通过 fetch 方法向 OpenAI API 发送 POST 请求，传入模型、提示（prompt）、最大 tokens 数量等参数。
-// 处理响应流：使用 TextDecoderStream 处理响应流并读取返回的结果。
-// 错误处理：在捕获异常时，增加失败计数，并返回 "Error" 字符串表示调用失败。
-    const messages = [{"role": "user", "content": message}]
-    try{
+    // 处理响应流：使用 TextDecoderStream 处理响应流并读取返回的结果。
+    // 错误处理：在捕获异常时，增加失败计数，并返回 "Error" 字符串表示调用失败。
+    const messages = [{ "role": "user", "content": message }]
+    try {
         /* text-davinci-003 */
         const response = await fetch(BASE_URL, {
             method: 'POST',
             headers: {
-            Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
-            'Content-Type': 'application/json',
+                Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-            model: MODEL,
-            messages: messages,
-            temperature: 0,
-            max_tokens: MAX_TOKEN_BIG,
-            top_p: TOP_P,
-            stream: false
+                model: MODEL,
+                messages: messages,
+                temperature: 0,
+                max_tokens: MAX_TOKEN_BIG,
+                top_p: TOP_P,
+                stream: false
             }),
         });
         const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
         if (!reader) {
             throw new Error('No reader found');
         }
-        const {value, done} = await reader.read();
+        const { value, done } = await reader.read();
         total_count += 1; // increment total count
-        if (value){
+        if (value) {
             const gpt_response = JSON.parse(value)["choices"][0]
             console.log("response:", gpt_response);
             return gpt_response["message"]["content"];
@@ -295,7 +295,7 @@ async function generateResponse(message){
 }
 
 
-function genDimRequirements(dimensions, numResponses){
+function genDimRequirements(dimensions, numResponses) {
     //生成维度要求：对于每个响应，生成一个唯一 ID，并为类别型和序数型维度选择随机值，作为要求条件。
     // 返回值：返回一个包含维度要求和对应数据的对象，供后续调用使用。
     // generate a list of requirements for each dimension
@@ -304,16 +304,16 @@ function genDimRequirements(dimensions, numResponses){
     // the ID of the requirement is the (index + 1) of the requirement in the list
     let dimReqs = [];
     let data = {};
-    for (let i = 0; i < numResponses; i++){
+    for (let i = 0; i < numResponses; i++) {
         let req = ""
         let datum = {};
         datum["ID"] = uuid();
-        if ( useResponseStore.getState().responseId === null){
+        if (useResponseStore.getState().responseId === null) {
             useResponseStore.getState().setResponseId(datum["ID"]);
             useCurrStore.getState().setCurrDataId(datum["ID"]);
 
         }
-        datum["Dimension"] = {"categorical": {}, "numerical": {}, "ordinal": {}};
+        datum["Dimension"] = { "categorical": {}, "numerical": {}, "ordinal": {} };
         Object.entries(dimensions["categorical"]).forEach(([d, v]) => {
             // choose a random value from v
             let randVal = v[Math.floor(Math.random() * v.length)];
@@ -327,13 +327,13 @@ function genDimRequirements(dimensions, numResponses){
             req += d + ": " + randVal + "\n";
             datum["Dimension"]["ordinal"][d] = randVal;
         });
-        dimReqs.push({"ID": datum["ID"], "Requirements": req});
+        dimReqs.push({ "ID": datum["ID"], "Requirements": req });
         data[datum["ID"]] = datum;
     }
-    return {dimReqs, data};
+    return { dimReqs, data };
 }
 
-function genFilteredDimRequirements(dimensionMap, numResponses){
+function genFilteredDimRequirements(dimensionMap, numResponses) {
     // generate a list of requirements for each dimension
     // return a list of requirements
     // **** IMPORTANT ****
@@ -341,11 +341,11 @@ function genFilteredDimRequirements(dimensionMap, numResponses){
     let dimReqs = [];
     let data = {};
     // console.log("numResponse", numResponses);
-    for (let i = 0; i < numResponses; i++){
+    for (let i = 0; i < numResponses; i++) {
         let req = ""
         let datum = {};
         datum["ID"] = uuid();
-        datum["Dimension"] = {"categorical": {}, "numerical": {}, "ordinal": {}};
+        datum["Dimension"] = { "categorical": {}, "numerical": {}, "ordinal": {} };
         Object.values(dimensionMap).forEach((dimension) => {
             let values = [];
             if (dimension.filtered && dimension.filtered.length > 0) {
@@ -358,16 +358,16 @@ function genFilteredDimRequirements(dimensionMap, numResponses){
             datum["Dimension"][dimension.type][dimension.name] = randVal;
         })
         console.log(req)
-        dimReqs.push({"ID": datum["ID"], "Requirements": req});
+        dimReqs.push({ "ID": datum["ID"], "Requirements": req });
         data[datum["ID"]] = datum;
     }
-    return {dimReqs, data};
+    return { dimReqs, data };
 }
 
 /**
  * Hardcoded to add one new label
  */
-function genLabelDimRequirements(dimensionMap, label, numResponses){
+function genLabelDimRequirements(dimensionMap, label, numResponses) {
     // generate a list of requirements for each dimension
     // return a list of requirements
     // **** IMPORTANT ****
@@ -375,11 +375,11 @@ function genLabelDimRequirements(dimensionMap, label, numResponses){
     let dimReqs = [];
     let data = {};
     // console.log("numResponse", numResponses);
-    for (let i = 0; i < numResponses; i++){
+    for (let i = 0; i < numResponses; i++) {
         let req = ""
         let datum = {};
         datum["ID"] = uuid();
-        datum["Dimension"] = {"categorical": {}, "numerical": {}, "ordinal": {}};
+        datum["Dimension"] = { "categorical": {}, "numerical": {}, "ordinal": {} };
         Object.values(dimensionMap).forEach((dimension) => {
             let values = [];
             if (dimension.id === label.dimensionId) {
@@ -392,103 +392,122 @@ function genLabelDimRequirements(dimensionMap, label, numResponses){
             datum["Dimension"][dimension.type][dimension.name] = randVal;
         })
         console.log(req)
-        dimReqs.push({"ID": datum["ID"], "Requirements": req});
+        dimReqs.push({ "ID": datum["ID"], "Requirements": req });
         data[datum["ID"]] = datum;
     }
-    return {dimReqs, data};
+    return { dimReqs, data };
 }
 //调用 summarizeText 函数生成摘要，处理响应。
 // 使用正则表达式清理标题中的不必要符号。
 // 尝试 5 次获取有效响应，若 5 次失败，则显示错误提示。
 
-export async function abstraction(text){
-  let response = await summarizeText(text);
-  response = response.substring(response.indexOf("{"), response.lastIndexOf("}") + 1);
-
-  for (let i = 0; i < 5; i++){
-    if (validateFormatForSummarization(response)) {
-        const responseJson = JSON.parse(response);
-        // using regular expression to remove the '' or <> before and after first and last letter in title
-        responseJson["Title"] = responseJson["Title"].replace(/(^['<])|(['>]$)/g, '');
-        return {"Key Words": responseJson["Key Words"], "Summary": responseJson["Summary"], "Structure": responseJson["Structure"], "Title": responseJson["Title"]};
-    };
-    response =  await summarizeText(text);
+export async function abstraction(text) {
+    let response = await summarizeText(text);
     response = response.substring(response.indexOf("{"), response.lastIndexOf("}") + 1);
-  }
-  // did not get a valid response after 5 tries
-  // make toasts to notify the user
+
+    for (let i = 0; i < 5; i++) {
+        if (validateFormatForSummarization(response)) {
+            let responseJson;
+            if (response.startsWith("```json") && response.endsWith("```")) {
+                // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+                const cleanedJsonString = response.slice(7, -3).trim();
+                // 解析为 JavaScript 对象
+                responseJson = JSON.parse(cleanedJsonString);
+                response = cleanedJsonString;
+            }
+            else {
+                responseJson = JSON.parse(response);
+            }
+            // using regular expression to remove the '' or <> before and after first and last letter in title
+            responseJson["Title"] = responseJson["Title"].replace(/(^['<])|(['>]$)/g, '');
+            return { "Key Words": responseJson["Key Words"], "Summary": responseJson["Summary"], "Structure": responseJson["Structure"], "Title": responseJson["Title"] };
+        };
+        response = await summarizeText(text);
+        response = response.substring(response.indexOf("{"), response.lastIndexOf("}") + 1);
+    }
+    // did not get a valid response after 5 tries
+    // make toasts to notify the user
     var toast = new bootstrap.Toast(document.getElementById('error-toast'));
     document.getElementById('error-toast-text').textContent = "Error: Failed to generate the summary. Please try again.";
     toast.show();
-    return {"Key Words": [], "Summary": "", "Structure": "", "Title": ""};
-  
+    return { "Key Words": [], "Summary": "", "Structure": "", "Title": "" };
+
 }
 //调用 OpenAI API 生成给定文本的摘要，关键词，结构和标题。
-async function summarizeText(text){
-    const message = `Given following text, return key words and a one sentence summary, a structure , and a title of the text.
+async function summarizeText(text) {
+    const message = `给定以下文本，返回关键词、一个一句话摘要、一个结构和文本的标题。
       ####
-      Text is: ${text}
+      文本是: ${text}
       ####
-      Don't include any text other than the json
-      Word limit of the summary text is 20 words
-      Word limit of the title is 5 words
-      Maximum 5 key words
+        不要包含除JSON以外的任何文本
+        摘要的字数限制为20个字
+        标题的字数限制为5个字
+        最多5个关键词
       ####
-      Should be in the following JSON format: 
+      应以以下JSON格式回答：
       {
           "Key Words": ["<key word 1>", "<key word 2>", ...], 
           "Summary": "<summary>",
           "Structure": "<part 1>-<part 2>-<part 3>...",
           "Title": "<title>"
       }`;
-    const messages = [{"role": "user", "content": message}]
+    const messages = [{ "role": "user", "content": message }]
     const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: messages,
-        temperature: 0,
-        max_tokens: 256,
-        top_p: TOP_P,
-      }),
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            model: MODEL,
+            messages: messages,
+            temperature: 0,
+            max_tokens: 256,
+            top_p: TOP_P,
+        }),
     });
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
     if (!reader) {
         throw new Error('No reader found');
     }
-    const {value, done} = await reader.read();
-    if (value){
+    const { value, done } = await reader.read();
+    if (value) {
         const gpt_response = JSON.parse(value)["choices"][0]
         console.log("text summary", gpt_response);
         return gpt_response["message"]["content"];
     } else {
         throw new Error('No value found');
     }
-  }
+}
 
 /*  验证Summarization的格式
     return true if the response is in the correct format
     return false if the response is not in the correct format 
 */
-function validateFormatForSummarization(response){
+function validateFormatForSummarization(response) {
     try {
         // check if the response is in the JSON format
         // only care about the text in between the {}
-        const result = JSON.parse(response);
+        let result;
+        if (response.startsWith("```json") && response.endsWith("```")) {
+            // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+            const cleanedJsonString = response.slice(7, -3).trim();
+            // 解析为 JavaScript 对象
+            result = JSON.parse(cleanedJsonString);
+        }
+        else {
+            result = JSON.parse(response);
+        }
         // console.log("result format",result);
         //  check if there are any infinities or NaNs
         for (const [key, value] of Object.entries(result)) {
-            if (key !== "Summary" && key !== "Structure" && key !== "Key Words" && key !== "Title"){
+            if (key !== "Summary" && key !== "Structure" && key !== "Key Words" && key !== "Title") {
                 console.log("invalid key", key);
                 return false;
             }
             // check if the value in Key Words is a list
-            if (key === "Key Words"){
-                if (!Array.isArray(value)){
+            if (key === "Key Words") {
+                if (!Array.isArray(value)) {
                     console.log("invalid value", value);
                     return false;
                 }
@@ -503,7 +522,7 @@ function validateFormatForSummarization(response){
         total_count += 1; // increment total count
         return false
     }
-  }
+}
 
 
 /*validate the format of the response
@@ -511,27 +530,36 @@ function validateFormatForSummarization(response){
   return false if the response is not in the correct format
   验证响应是否为有效的 JSON 格式，用于检查生成的维度数据是否符合要求。
 */
-export function validateFormatForAddingDimensions(response){
+export function validateFormatForAddingDimensions(response) {
     try {
         // check if the response is in the JSON format
-        const result =  JSON.parse(response);
+        let result;
+        if (response.startsWith("```json") && response.endsWith("```")) {
+            // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+            const cleanedJsonString = response.slice(7, -3).trim();
+            // 解析为 JavaScript 对象
+            result = JSON.parse(cleanedJsonString);
+        }
+        else {
+            result = JSON.parse(response);
+        }
         // check if the number of dimensions is correct
         return true;
-        
+
     }
     catch (e) {
         console.log("[Error] " + e, response);
-        if (isLast){
-          var toast = new bootstrap.Toast(document.getElementById('error-toast'));
-          const err = document.getElementById('error-toast-text');
-          if (err) {
-            err.textContent = "Encountered errors when parsing the JSON response from OpenAI";
-            toast.show();
-          }
+        if (isLast) {
+            var toast = new bootstrap.Toast(document.getElementById('error-toast'));
+            const err = document.getElementById('error-toast-text');
+            if (err) {
+                err.textContent = "Encountered errors when parsing the JSON response from OpenAI";
+                toast.show();
+            }
         }
         return false
     }
-  }
+}
 
 /**
  * Given the current dimensions, generate a brand new dimension and its labels.
@@ -546,9 +574,18 @@ export function validateFormatForAddingDimensions(response){
 export async function addNewDimension(prompt, dimensionName, dimensionMap, setDimensionMap, nodeMap, setNodeMap) {
     let newDimResponse = await createLabelsFromDimension(prompt, dimensionName);
     let newDimension = null;
-    for (let i = 0; i < 5; i++){
+    for (let i = 0; i < 5; i++) {
         if (validateFormatForAddingDimensions(newDimResponse)) {
-            newDimension = JSON.parse(newDimResponse);
+            if (newDimResponse.startsWith("```json") && newDimResponse.endsWith("```")) {
+                // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+                const cleanedJsonString = newDimResponse.slice(7, -3).trim();
+                // 解析为 JavaScript 对象
+                newDimension = JSON.parse(cleanedJsonString);
+                newDimResponse = cleanedJsonString;
+            }
+            else {
+                newDimension = JSON.parse(newDimResponse);
+            }
             break
         };
         newDimResponse = await createLabelsFromDimension(prompt, dimensionName)
@@ -566,7 +603,7 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
     }
     var toast = new bootstrap.Toast(document.getElementById('fav-toast'));
     var msg = document.getElementById('toast-text');
-      if (msg) {
+    if (msg) {
         msg.textContent = "New dimension added.";
         toast.show();
     }
@@ -591,11 +628,11 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
         "type": "categorical",
         "values": values,
     }
-    const {currBlockId} = useCurrStore.getState();
-    DatabaseManager.postDimension(currBlockId, name, newDimensionToStore) 
+    const { currBlockId } = useCurrStore.getState();
+    DatabaseManager.postDimension(currBlockId, name, newDimensionToStore)
 
     // for each response, run reviseResponseWithNewDimensionLabel
-    const assignLabelPrompt = 
+    const assignLabelPrompt =
         `\nThis is the newly added dimension: ${dimensionName}
         ####
         these are the dimension values: [${values.join(', ')}]
@@ -603,18 +640,18 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
         Assign a value from the dimension ${dimensionName} to the following response.`
     const data = {};
     const responsePromises = Object.entries(nodeMap).map(async ([id, node], i) => {
-        try{
-            const wordLimit = "Limit the response to 150 words."
+        try {
+            const wordLimit = "使用中文回答，并且回答在150个字以内。"
             const formatReq = `
             ####
             answer in the following JSON format: 
             {
                 "label": "<label>"
             }`
-            const assignLabelMessage = "Prompt: " + assignLabelPrompt + "####" + "Current response: " + node["Result"]+ "####" + formatReq;
+            const assignLabelMessage = "Prompt: " + assignLabelPrompt + "####" + "Current response: " + node["Result"] + "####" + formatReq;
             var labelResponse = await generateResponse(assignLabelMessage);
             var label = "";
-            for (let i = 0; i < 5; i++){
+            for (let i = 0; i < 5; i++) {
                 try {
                     label = JSON.parse(labelResponse)["label"];
                     break;
@@ -644,7 +681,7 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
             return;
         }
     })
-     await Promise.allSettled(responsePromises);
+    await Promise.allSettled(responsePromises);
     setNodeMap({
         ...data,
     });
@@ -657,7 +694,7 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
     DatabaseManager.addBatchData(currBlockId, data);
     var toast = new bootstrap.Toast(document.getElementById('fav-toast'));
     msg = document.getElementById('toast-text');
-      if (msg) {
+    if (msg) {
         msg.textContent = "Current responses updated.";
         toast.show();
     }
@@ -669,8 +706,8 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
  * Create new labels for a given dimension
 为给定维度名称生成一组新的标签。
  */
-async function createLabelsFromDimension(prompt, dimensionName){
-    const message =  `Given a dimension name, return a list of labels for that dimension for the prompt ${prompt}
+async function createLabelsFromDimension(prompt, dimensionName) {
+    const message = `Given a dimension name, return a list of labels for that dimension for the prompt ${prompt}
     ####
     Dimension name is: ${dimensionName}
     ####
@@ -678,28 +715,28 @@ async function createLabelsFromDimension(prompt, dimensionName){
     {
         "${dimensionName}": ["<label 1>", "<label 2>", "<label 3>"]
     }`;
-    const messages = [{"role": "user", "content": message}]
+    const messages = [{ "role": "user", "content": message }]
     const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
+            Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: MODEL,
-          messages: messages,
-          temperature: TEMPERATURE,
-          max_tokens: MAX_TOKEN_BIG,
-          top_p: TOP_P,
-          stream: false
+            model: MODEL,
+            messages: messages,
+            temperature: TEMPERATURE,
+            max_tokens: MAX_TOKEN_BIG,
+            top_p: TOP_P,
+            stream: false
         }),
-      });
+    });
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
     if (!reader) {
         throw new Error('No reader found');
     }
-    const {value, done} = await reader.read();
-    if (value){
+    const { value, done } = await reader.read();
+    if (value) {
         const gpt_response = JSON.parse(value)["choices"][0]
         console.log("labels  value", gpt_response);
         return gpt_response["message"]["content"];

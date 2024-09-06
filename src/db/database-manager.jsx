@@ -31,7 +31,7 @@ export default class DatabaseManager {
         return param;
     }
 
-    // get the dimension size
+    // 生成的维度数量
     static getDimensionSize() {
         const param = JSON.parse(localStorage.getItem(NUM_DIM));
         return param;

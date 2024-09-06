@@ -49,12 +49,34 @@ export async function generateDimensions(query, context) {
     total += 1;
     if (i === 4) {
       if (validateFormatForDimensions(categoricalDims, false, true)) {
-        res["categorical"] = JSON.parse(categoricalDims);
+        let result;
+        if (categoricalDims.startsWith("```json") && categoricalDims.endsWith("```")) {
+          // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+          const cleanedJsonString = categoricalDims.slice(7, -3).trim();
+          // 解析为 JavaScript 对象
+          result = JSON.parse(cleanedJsonString);
+          categoricalDims = cleanedJsonString;
+        }
+        else {
+          result = JSON.parse(categoricalDims);
+        }
+        res["categorical"] = result;
         break
       }
     };
     if (validateFormatForDimensions(categoricalDims, false, false)) {
-      res["categorical"] = JSON.parse(categoricalDims);
+      let result;
+      if (categoricalDims.startsWith("```json") && categoricalDims.endsWith("```")) {
+        // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+        const cleanedJsonString = categoricalDims.slice(7, -3).trim();
+        // 解析为 JavaScript 对象
+        result = JSON.parse(cleanedJsonString);
+        categoricalDims = cleanedJsonString;
+      }
+      else {
+        result = JSON.parse(categoricalDims);
+      }
+      res["categorical"] = result;
       break
     };
     // If first response fails, generate at high temperature
@@ -66,7 +88,18 @@ export async function generateDimensions(query, context) {
     total += 1;
     if (i === 4) {
       if (validateFormatForDimensions(ordinalDims, false, true)) {
-        res["ordinal"] = JSON.parse(ordinalDims);
+        let result;
+        if (ordinalDims.startsWith("```json") && ordinalDims.endsWith("```")) {
+          // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+          const cleanedJsonString = ordinalDims.slice(7, -3).trim();
+          // 解析为 JavaScript 对象
+          result = JSON.parse(cleanedJsonString);
+          ordinalDims = cleanedJsonString;
+        }
+        else {
+          result = JSON.parse(ordinalDims);
+        }
+        res["ordinal"] = result;
         break
       }
     };
@@ -76,7 +109,18 @@ export async function generateDimensions(query, context) {
       //     res["categorical"][key] = value;
       // });
       // break
-      res["ordinal"] = JSON.parse(ordinalDims);
+      let result;
+      if (ordinalDims.startsWith("```json") && ordinalDims.endsWith("```")) {
+        // 使用 slice 截取去掉前面的 ```json 和后面的 ```
+        const cleanedJsonString = ordinalDims.slice(7, -3).trim();
+        // 解析为 JavaScript 对象
+        result = JSON.parse(cleanedJsonString);
+        ordinalDims = cleanedJsonString;
+      }
+      else {
+        result = JSON.parse(ordinalDims);
+      }
+      res["ordinal"] = result;
       break
     };
     fail += 1;
@@ -277,7 +321,7 @@ export function validateFormatForDimensions(response: string, isNumerical: boole
     // check if the response is in the JSON format
     // 判断是否以 ```json 开头并以 ``` 结尾
     let result;
-    if (response.startsWith("```json") && jsonStringWithTicks.endsWith("```")) {
+    if (response.startsWith("```json") && response.endsWith("```")) {
       // 使用 slice 截取去掉前面的 ```json 和后面的 ```
       const cleanedJsonString = response.slice(7, -3).trim();
       // 解析为 JavaScript 对象
@@ -377,7 +421,7 @@ export function validateFormatForHighlight(response: string) {
   try {
     // check if the response is in the JSON format
     let result;
-    if (response.startsWith("```json") && jsonStringWithTicks.endsWith("```")) {
+    if (response.startsWith("```json") && response.endsWith("```")) {
       // 使用 slice 截取去掉前面的 ```json 和后面的 ```
       const cleanedJsonString = response.slice(7, -3).trim();
       // 解析为 JavaScript 对象

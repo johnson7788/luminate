@@ -1,5 +1,7 @@
 # Luminate: Structured Generation and Exploration of Design Space with Large Language Models for Human-AI Co-Creation
 
+branch: chinese中文版本
+
 <p align="left">
 <a href="https://luminate-research.netlify.app/" target="_blank"><img src="./public/luminate-interface.png" width="100%" style="vertical-align: middle;" alt="G"></img></a>
 </p>

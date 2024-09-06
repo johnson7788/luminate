@@ -104,7 +104,7 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
     You MUST answer in the following JSON object format, wrapped in curly braces. There must be ${catNum} items in the JSON object:
     {"<dimension name #1>": [<${valNum} values for this dimension>],..., "<dimension name #${catNum}>" : [<${valNum} values for this dimension>]}
     `
-
+    const messages = [{"role": "user", "content": message}]
     try {
       const response = await fetch(BASE_URL, {
           method: 'POST',
@@ -114,12 +114,10 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
           },
           body: JSON.stringify({
             model: MODEL,
-            prompt: `${message}`,
+            messages: messages,
             temperature: temperature,
             max_tokens: MAX_TOKEN_BIG,
             top_p: TOP_P,
-            frequency_penalty: 0.75,
-            presence_penalty: 0,
             stream: false
           }),
         });
@@ -148,6 +146,7 @@ export async function generateOrdinalDimensions(prompt, catNum){
   {
       "<dimension name>": ["<lowest degree>", "least", "moderate", "most", "<highest degree>"]
   }`
+  const messages = [{"role": "user", "content": message}]
   try {
     const response = await fetch(BASE_URL, {
         method: 'POST',
@@ -157,12 +156,10 @@ export async function generateOrdinalDimensions(prompt, catNum){
         },
         body: JSON.stringify({
           model: MODEL,
-          prompt: `${message}`,
+          messages: messages,
           temperature: TEMPERATURE,
           max_tokens: MAX_TOKEN_BIG,
           top_p: TOP_P,
-          frequency_penalty: 0.75,
-          presence_penalty: 0,
           stream: false
         }),
       });
@@ -190,6 +187,7 @@ export async function generateNumericalDimensions(prompt, numNum){
     {
         "<dimension name>": [<lowest value>, <highest value>]
     }`;
+    const messages = [{"role": "user", "content": message}]
     const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
@@ -198,12 +196,10 @@ export async function generateNumericalDimensions(prompt, numNum){
       },
       body: JSON.stringify({
         model: MODEL,
-        prompt: `${message}`,
+        messages: messages,
         temperature: 0.7,
         max_tokens: MAX_TOKEN_SMALL,
         top_p: TOP_P,
-        frequency_penalty: 0.75,
-        presence_penalty: 0,
       }),
     });
     const reader:any = response.body?.pipeThrough(new TextDecoderStream()).getReader();
@@ -245,6 +241,7 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
         "2": "<original text 2>", 
         "3": "<original text 3>"
     }`;
+    const messages = [{"role": "user", "content": message}]
     const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
@@ -253,12 +250,10 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
       },
       body: JSON.stringify({
         model: MODEL,
-        prompt: `${message}`,
+        messages: messages,
         temperature: 0,
         max_tokens: 256,
         top_p: TOP_P,
-        frequency_penalty: 0.75,
-        presence_penalty: 0,
       }),
     });
     const reader : any= response.body?.pipeThrough(new TextDecoderStream()).getReader();
@@ -331,6 +326,7 @@ export async function getKeyTextBasedOnDimension(kvPairs, text){
       "2": "<original text 2>", 
       "3": "<original text 3>"
   }`;
+  const messages = [{"role": "user", "content": message}]
   const response = await fetch(BASE_URL, {
     method: 'POST',
     headers: {
@@ -339,12 +335,10 @@ export async function getKeyTextBasedOnDimension(kvPairs, text){
     },
     body: JSON.stringify({
       model: MODEL,
-      prompt: `${message}`,
+      messages: messages,
       temperature: 0,
       max_tokens: 256,
       top_p: 1,
-      frequency_penalty: 0.75,
-      presence_penalty: 0,
     }),
   });
   const reader : any  = response.body?.pipeThrough(new TextDecoderStream()).getReader();

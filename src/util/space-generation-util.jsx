@@ -255,6 +255,7 @@ async function generateResponse(message){
     // 调用 OpenAI API：通过 fetch 方法向 OpenAI API 发送 POST 请求，传入模型、提示（prompt）、最大 tokens 数量等参数。
 // 处理响应流：使用 TextDecoderStream 处理响应流并读取返回的结果。
 // 错误处理：在捕获异常时，增加失败计数，并返回 "Error" 字符串表示调用失败。
+    const messages = [{"role": "user", "content": message}]
     try{
         /* text-davinci-003 */
         const response = await fetch(BASE_URL, {
@@ -265,12 +266,10 @@ async function generateResponse(message){
             },
             body: JSON.stringify({
             model: MODEL,
-            prompt: `${message}`,
+            messages: messages,
             temperature: 0,
             max_tokens: MAX_TOKEN_BIG,
             top_p: TOP_P,
-            frequency_penalty: 0.75,
-            presence_penalty: 0,
             stream: false
             }),
         });
@@ -440,6 +439,7 @@ async function summarizeText(text){
           "Structure": "<part 1>-<part 2>-<part 3>...",
           "Title": "<title>"
       }`;
+    const messages = [{"role": "user", "content": message}]
     const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
@@ -448,12 +448,10 @@ async function summarizeText(text){
       },
       body: JSON.stringify({
         model: MODEL,
-        prompt: `${message}`,
+        messages: messages,
         temperature: 0,
         max_tokens: 256,
         top_p: TOP_P,
-        frequency_penalty: 0.75,
-        presence_penalty: 0,
       }),
     });
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
@@ -677,7 +675,7 @@ async function createLabelsFromDimension(prompt, dimensionName){
     {
         "${dimensionName}": ["<label 1>", "<label 2>", "<label 3>"]
     }`;
-
+    const messages = [{"role": "user", "content": message}]
     const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: {
@@ -686,12 +684,10 @@ async function createLabelsFromDimension(prompt, dimensionName){
         },
         body: JSON.stringify({
           model: MODEL,
-          prompt: `${message}`,
+          messages: messages,
           temperature: TEMPERATURE,
           max_tokens: MAX_TOKEN_BIG,
           top_p: TOP_P,
-          frequency_penalty: 0.75,
-          presence_penalty: 0,
           stream: false
         }),
       });

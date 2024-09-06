@@ -159,9 +159,9 @@ export default function AiForm({responseHandler, selectedContent}) {
             return;
         }
 
-        // set the loading anchor to true and disable the submit button
-        setFirstRendered(false);                // after first render, the inputbase value is not the selectedContent but the query
-        setIsSubmitting(true);                  // during submission, disable the inputbase
+        // 将加载锚点设置为 true，并禁用提交按钮。
+        setFirstRendered(false);                // 在首次渲染后，InputBase 的值不再是 selectedContent，而是 query
+        setIsSubmitting(true);                  // 提交期间，禁用 InputBase。
        
         // generate dimensions
         const dims = await generateDimensions(query, currBlockId);

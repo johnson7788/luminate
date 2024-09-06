@@ -126,8 +126,9 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
       }
       const reader : any = response.body?.pipeThrough(new TextDecoderStream()).getReader();
       const {value, done} = await reader.read();
-      console.log("categorical dimensions", JSON.parse(value)["choices"][0]["text"]);
-      return JSON.parse(value)["choices"][0]["text"];
+      const gpt_response = JSON.parse(value)["choices"][0]
+      console.log("categorical dimensions", gpt_response);
+      return gpt_response["message"]["content"];
 
     } catch (e) {
       let toast = new bootstrap.Toast(document.getElementById('error-toast'));
@@ -168,8 +169,9 @@ export async function generateOrdinalDimensions(prompt, catNum){
     }
     const reader : any = response.body?.pipeThrough(new TextDecoderStream()).getReader();
     const {value, done} = await reader.read();
-    console.log("ordinal dimensions", JSON.parse(value)["choices"][0]["text"]);
-    return JSON.parse(value)["choices"][0]["text"];
+    const gpt_response = JSON.parse(value)["choices"][0]
+    console.log("ordinal dimensions", gpt_response);
+    return gpt_response["message"]["content"];
   } catch (e) {
     console.log(e);
     return null;
@@ -204,8 +206,9 @@ export async function generateNumericalDimensions(prompt, numNum){
     });
     const reader:any = response.body?.pipeThrough(new TextDecoderStream()).getReader();
     const {value, done} = await reader.read();
-    console.log("numerical dimensions", JSON.parse(value)["choices"][0]["text"]);
-    return JSON.parse(value)["choices"][0]["text"];
+    const gpt_response = JSON.parse(value)["choices"][0]
+    console.log("categorical dimensions", gpt_response);
+    return gpt_response["message"]["content"];
 }
 
 
@@ -258,7 +261,10 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
     });
     const reader : any= response.body?.pipeThrough(new TextDecoderStream()).getReader();
     const {value, done} = await reader.read();
-    return JSON.parse(value)["choices"][0]["text"];
+    const gpt_response = JSON.parse(value)["choices"][0]
+    console.log("relate text", gpt_response);
+    return gpt_response["message"]["content"];
+    
 }
 
 
@@ -343,7 +349,9 @@ export async function getKeyTextBasedOnDimension(kvPairs, text){
   });
   const reader : any  = response.body?.pipeThrough(new TextDecoderStream()).getReader();
   const {value, done} = await reader.read();
-  let result  = JSON.parse(value)["choices"][0]["text"]
+  const gpt_response = JSON.parse(value)["choices"][0]
+  console.log("categorical dimensions", gpt_response);
+  let result = gpt_response["message"]["content"];
   // only grep the {} part
   result = result.substring(result.indexOf("{"), result.lastIndexOf("}") + 1);
   return result;

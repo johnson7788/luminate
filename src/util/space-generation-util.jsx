@@ -280,7 +280,9 @@ async function generateResponse(message){
         const {value, done} = await reader.read();
         total_count += 1; // increment total count
         if (value){
-            return JSON.parse(value)["choices"][0]["text"];
+            const gpt_response = JSON.parse(value)["choices"][0]
+            console.log("response:", gpt_response);
+            return gpt_response["message"]["content"];
         } else {
             throw new Error('No value found');
         }
@@ -459,9 +461,10 @@ async function summarizeText(text){
         throw new Error('No reader found');
     }
     const {value, done} = await reader.read();
-    // console.log("text summary",JSON.parse(value)["choices"][0]["text"]);
     if (value){
-        return JSON.parse(value)["choices"][0]["text"];
+        const gpt_response = JSON.parse(value)["choices"][0]
+        console.log("text summary", gpt_response);
+        return gpt_response["message"]["content"];
     } else {
         throw new Error('No value found');
     }
@@ -697,8 +700,9 @@ async function createLabelsFromDimension(prompt, dimensionName){
     }
     const {value, done} = await reader.read();
     if (value){
-        console.log("value", JSON.parse(value)["choices"][0]["text"]);
-        return JSON.parse(value)["choices"][0]["text"];
+        const gpt_response = JSON.parse(value)["choices"][0]
+        console.log("labels  value", gpt_response);
+        return gpt_response["message"]["content"];
     } else {
         throw new Error('No value found');
     }

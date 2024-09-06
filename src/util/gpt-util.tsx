@@ -6,7 +6,8 @@ import { getEnvVal } from "./util";
 
 const MAX_TOKEN_BIG = 1000;
 const MAX_TOKEN_SMALL = 256;
-const MODEL = "gpt-3.5-turbo-instruct";
+const MODEL = import.meta.env.VITE_MODEL_NAME; //修改了模型名称
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 const TEMPERATURE = 0.7;
 const TOP_P = 1;
 
@@ -15,6 +16,7 @@ export async function generateDimensions(query, context){
   const start = new Date().getTime();
   let fail = 0;
   let total = 0;
+  //这行代码从 useEditorStore 中获取编辑器的 API，并保存当前的编辑器数据。
   const {api} = useEditorStore.getState();
   const ejData = await api.save();
   // get the last block
@@ -104,7 +106,7 @@ export async function generateCategoricalDimensions(prompt, catNum, valNum, temp
     `
 
     try {
-      const response = await fetch('https://api.openai.com/v1/completions', {
+      const response = await fetch(BASE_URL, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -147,7 +149,7 @@ export async function generateOrdinalDimensions(prompt, catNum){
       "<dimension name>": ["<lowest degree>", "least", "moderate", "most", "<highest degree>"]
   }`
   try {
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -188,7 +190,7 @@ export async function generateNumericalDimensions(prompt, numNum){
     {
         "<dimension name>": [<lowest value>, <highest value>]
     }`;
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -243,7 +245,7 @@ export async function getRelatedTextBasedOnDimension(dimension, val, text){
         "2": "<original text 2>", 
         "3": "<original text 3>"
     }`;
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -329,7 +331,7 @@ export async function getKeyTextBasedOnDimension(kvPairs, text){
       "2": "<original text 2>", 
       "3": "<original text 3>"
   }`;
-  const response = await fetch('https://api.openai.com/v1/completions', {
+  const response = await fetch(BASE_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,

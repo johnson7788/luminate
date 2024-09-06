@@ -6,11 +6,13 @@ import useSelectedStore from "../store/use-selected-store";
 import * as bootstrap from 'bootstrap';
 import { uuid, getEnvVal } from "./util";
 import { generateCategoricalDimensions, validateFormatForDimensions } from "./gpt-util";
-
+//实现了一个与 OpenAI API 交互的复杂逻辑，用于根据给定的维度和要求生成多个响应，并将这些响应处理后存储在数据库中。
+//它集成了多个状态管理器和实用工具函数，用于生成上下文、格式化请求，并对返回的结果进行摘要。
 const DELIMITER = "####";
 const MAX_TOKEN_BIG = 3500;
 const MAX_TOKEN_SMALL = 1000;
-const MODEL = "gpt-3.5-turbo-instruct";
+const MODEL = import.meta.env.VITE_MODEL_NAME; //修改了模型名称
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 const TEMPERATURE = 0.7;
 const TOP_P = 1;
 
@@ -19,6 +21,9 @@ let total_count = 0;
 let firstId = '';
 
 async function editorBackgroundPrompt() {
+    //该函数从 useEditorStore 获取编辑器的当前状态，并提取最后一个块的内容作为“上下文”。
+// 根据上下文的存在情况，生成一个背景信息，并返回给调用者。
+// 如果上下文和前一个内容都存在，则将它们组合起来。
     let context=""; // FIXME: unknown context
     const {api} = useEditorStore.getState();
     const ejData = await api.save();
@@ -41,6 +46,8 @@ async function editorBackgroundPrompt() {
 }
 
 /*  
+根据维度要求生成多个基于 GPT 模型的响应，并存储这些响应。
+它包含了对维度的操作、批量处理、错误处理、摘要生成等复杂逻辑，并依赖于多个状态管理器和数据库管理工具。
     for each dimension, randomly choose a value
     if the dimension is categorical, choose a value from the list
     if the dimension is continuous, choose a value from the range
@@ -196,6 +203,11 @@ export async function addLabelToSpace(dimensionMap, newLabel, numResponses, prom
 }
 
 /**
+ * 处理 GPT 模型的生成请求，通过指定的维度生成类似的节点，并将生成的结果存储在数据库中
+ * 生成多个类似节点：通过遍历 [0, 1, 2, 3, 4]，为每个节点生成一个新 ID，并创建一个包含 Prompt（提示）和其他信息的新节点。
+调用 GPT 生成响应：每个节点都会调用 generateResponse 函数，根据 message 调用 OpenAI API 生成响应。
+生成摘要和关键字：每个响应生成后，会通过 abstraction 提取摘要、关键词、结构和标题，并存储在数据对象中。
+将节点数据存储到数据库中：最后，通过 DatabaseManager.addBatchData 将新生成的节点数据批量存储到数据库中。
  * Given the current state of the nodes, selected dimension labels, generate more nodes in that space.
  * labels: Label[] -> {dimensionId, name, type}[]
  */
@@ -240,10 +252,12 @@ export async function addSimilarNodesToSpace(node, nodeMap, setNodeMap){
 
 
 async function generateResponse(message){
-    // call the OpenAI API to generate a response
+    // 调用 OpenAI API：通过 fetch 方法向 OpenAI API 发送 POST 请求，传入模型、提示（prompt）、最大 tokens 数量等参数。
+// 处理响应流：使用 TextDecoderStream 处理响应流并读取返回的结果。
+// 错误处理：在捕获异常时，增加失败计数，并返回 "Error" 字符串表示调用失败。
     try{
         /* text-davinci-003 */
-        const response = await fetch('https://api.openai.com/v1/completions', {
+        const response = await fetch(BASE_URL, {
             method: 'POST',
             headers: {
             Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -281,6 +295,8 @@ async function generateResponse(message){
 
 
 function genDimRequirements(dimensions, numResponses){
+    //生成维度要求：对于每个响应，生成一个唯一 ID，并为类别型和序数型维度选择随机值，作为要求条件。
+    // 返回值：返回一个包含维度要求和对应数据的对象，供后续调用使用。
     // generate a list of requirements for each dimension
     // return a list of requirements
     // **** IMPORTANT ****
@@ -380,6 +396,9 @@ function genLabelDimRequirements(dimensionMap, label, numResponses){
     }
     return {dimReqs, data};
 }
+//调用 summarizeText 函数生成摘要，处理响应。
+// 使用正则表达式清理标题中的不必要符号。
+// 尝试 5 次获取有效响应，若 5 次失败，则显示错误提示。
 
 export async function abstraction(text){
   let response = await summarizeText(text);
@@ -403,7 +422,7 @@ export async function abstraction(text){
     return {"Key Words": [], "Summary": "", "Structure": "", "Title": ""};
   
 }
-
+//调用 OpenAI API 生成给定文本的摘要，关键词，结构和标题。
 async function summarizeText(text){
     const message = `Given following text, return key words and a one sentence summary, a structure , and a title of the text.
       ####
@@ -421,7 +440,7 @@ async function summarizeText(text){
           "Structure": "<part 1>-<part 2>-<part 3>...",
           "Title": "<title>"
       }`;
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,
@@ -450,7 +469,7 @@ async function summarizeText(text){
     }
   }
 
-/*  validate the format of the response
+/*  验证Summarization的格式
     return true if the response is in the correct format
     return false if the response is not in the correct format 
 */
@@ -489,6 +508,7 @@ function validateFormatForSummarization(response){
 /*validate the format of the response
   return true if the response is in the correct format
   return false if the response is not in the correct format
+  验证响应是否为有效的 JSON 格式，用于检查生成的维度数据是否符合要求。
 */
 export function validateFormatForAddingDimensions(response){
     try {
@@ -520,7 +540,7 @@ export function validateFormatForAddingDimensions(response){
  * 
  * 
  * Not doing this: Then, for each response, apply one of the dimension labels to the current response.
- * 
+ * 添加一个新维度到现有维度映射 dimensionMap 中，并为每个响应分配一个新的维度标签。
  */
 export async function addNewDimension(prompt, dimensionName, dimensionMap, setDimensionMap, nodeMap, setNodeMap) {
     let newDimResponse = await createLabelsFromDimension(prompt, dimensionName);
@@ -646,6 +666,7 @@ export async function addNewDimension(prompt, dimensionName, dimensionMap, setDi
 
 /*
  * Create new labels for a given dimension
+为给定维度名称生成一组新的标签。
  */
 async function createLabelsFromDimension(prompt, dimensionName){
     const message =  `Given a dimension name, return a list of labels for that dimension for the prompt ${prompt}
@@ -657,7 +678,7 @@ async function createLabelsFromDimension(prompt, dimensionName){
         "${dimensionName}": ["<label 1>", "<label 2>", "<label 3>"]
     }`;
 
-    const response = await fetch('https://api.openai.com/v1/completions', {
+    const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${getEnvVal('VITE_OPENAI_API_KEY')}`,

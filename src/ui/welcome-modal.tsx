@@ -1,5 +1,6 @@
-// a modal that shows up on the first visit to the site
-// and prompts the user to enter their open ai api key
+// 页面加载时，WelcomeModal 会自动弹出。
+// 用户输入 OpenAI API Key 并提交表单后，API Key 被保存为环境变量，模态框关闭。
+// 如果用户按下 Escape 键关闭模态框，系统会提示用户必须设置 API Key 才能继续使用应用。
 import './welcome-modal.scss';
 import React, { useState } from 'react';
 import { Modal, Box, TextField} from '@mui/material';
@@ -35,6 +36,7 @@ export function WelcomeModal( {updateApiKey}){
     updateApiKey(apiToken as string);
   };
 
+  //Material UI 的 Modal、Box 和 TextField 组件，以及 Bootstrap 的 Toast 组件
   return (
     <div className="welcome-modal">
       <Modal

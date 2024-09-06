@@ -281,7 +281,7 @@ async function generateResponse(message) {
         total_count += 1; // increment total count
         if (value) {
             const gpt_response = JSON.parse(value)["choices"][0]
-            console.log("response:", gpt_response);
+            console.log("调用了generateResponse，生成答复:", gpt_response);
             return gpt_response["message"]["content"];
         } else {
             throw new Error('No value found');
@@ -473,7 +473,7 @@ async function summarizeText(text) {
     const { value, done } = await reader.read();
     if (value) {
         const gpt_response = JSON.parse(value)["choices"][0]
-        console.log("text summary", gpt_response);
+        console.log("生成摘要，关键词，标题:", gpt_response);
         return gpt_response["message"]["content"];
     } else {
         throw new Error('No value found');

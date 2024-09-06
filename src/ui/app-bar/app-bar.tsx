@@ -12,7 +12,7 @@ const LOGO = 'luminate-logo-w-words.svg';
 
 export const LuminateAppBar = () => {
   const handleRedirect = () => {
-    window.open('https://luminate-research.github.io/', '_blank');
+    // window.open('https://luminate-research.github.io/', '_blank');
   };
 
   return (

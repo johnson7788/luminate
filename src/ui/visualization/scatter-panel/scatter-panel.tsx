@@ -162,7 +162,7 @@ export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
         onSubmit={submitListener}>
         <KeywordSearch>
           <StyledInputBase
-            placeholder="Search for nodes using keywords"
+            placeholder="根据关键字搜索节点"
             inputProps={{ 'aria-label': 'search' }}
             onChange={handleInputChange} 
             value={query} 

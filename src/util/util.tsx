@@ -44,7 +44,7 @@ export const colors : string[] = [
   '#4DCFB1',
   '#FFA054',
 ];
-
+//引导的介绍
 export const startTutorial = () => {
   const intro = introJs();
   intro.setOptions({
@@ -52,59 +52,58 @@ export const startTutorial = () => {
     steps: [
       {
         title: 'Luminate Tutorial <img src="luminate-logo.png" style="width:30px; height:30px;"/>',
-        intro: 'This is a walkthrough to get you acquainted with each component of Luminate and help you understand the system.'
+        intro: '这是一个向导，帮助你熟悉 Luminate 的每个组件并理解系统。'
       },
       {
         title: 'Text Editor',
         element: document.querySelector('#text-editor-container'),
-        intro: "This is the text editor where you can write your story."
+        intro: "这是文本编辑器，你可以在这里撰写你的Story"
       },
       {
         title: 'Prompt AI',
         element: document.querySelector('#ai-form'),
-        intro: "You can also use this input box to ask AI for ideas.\
-        The AI takes a few seconds to figure out important attributes to this prompt and generates multiple responses. "
+        intro: "你也可以使用此输入框向 AI 询问创意。AI 会花几秒钟来分析提示的关键属性，并生成多个响应。"
       },
       {
         title: 'Exploration View',
         element: document.querySelector('#my-spaceviz'),
-        intro: "This is the exploration view where you can see multiple responses once you prompt AI for ideas."
+        intro: "这是探索视图，当你向 AI 询问创意时，你可以在此查看多个响应。"
       },
       {
         title: 'Collapse Text Editor',
         element: document.querySelector('#collapse-button'),
-        intro: "You can collapse the text editor to get a better view of the exploration view."
+        intro: "你可以折叠文本编辑器，以便更好地查看探索视图。"
       },
       {
         title: 'Search Bar',
         element: document.querySelector('#searchbar'),
-        intro: "You can use the search bar to quickly find responses that contain a specific word or phrase."
+        intro: "你可以使用搜索栏快速查找包含特定词语或短语的响应。"
       },
       {
         title: 'Favorites',
         element: document.querySelector('#fav-button'),
-        intro: "You can click the bookmark icon to see your favorite responses of current space."
+        intro: "你可以点击书签图标，查看当前空间的收藏响应。"
       },
       {
         title:'Filter',
         element: document.querySelector('#filter-dims'),
-        intro: 'Once the design space is generated, you can see dimensions like the one shown here. You can filter the responses based on these dimensions and the associated values.\
+        intro: '一旦设计空间生成后，你可以看到如图所示的维度。你可以根据这些维度及其相关的值筛选响应。\
         <img src="filter-bar.png" style="width:100%; height:auto;"/>'
       },
       {
         title:'Semantic Zoom',
         element: document.querySelector('.semantic-level-panel'),
-        intro: 'You can use the semantic zoom to see responses at different levels of abstraction (dot,title, keywords, summary, and full text).\
+        intro: '你可以使用语义缩放功能，查看不同抽象层次的响应（点、标题、关键词、摘要和全文）。\
         <img src="semantic-zoom.png" style="width:100%; height:auto;"/>'
       },
       {
         title:'Select Dimension',
         element: document.querySelector('#x-trigger'),
-        intro: "You can select a dimension to arrange the responses in the exploration view based on the values in that dimension."
+        intro: "你可以选择一个维度，根据该维度的值在探索视图中排列响应。"
       },
       {
         title:'Menu',
-        intro: ' At the top right corner, you can see 4 icon buttons.\
+        intro: ' 在右上角，你可以看到四个图标按钮。\
                 <ul style=\"list-style-type: none; padding-left: 0; margin-top: 10px;\">\
                   <li style=\"display: flex; align-items: center; gap: 10px; margin-bottom: 10px;\">\
                       <img src=\"tutorial-menu.png\" alt=\"Tutorial\" style=\"width: 30px; height: 30px;\">\
@@ -131,7 +130,7 @@ export const startTutorial = () => {
       },
       {
         title: 'Luminate Tutorial <img src="luminate-logo.png" style="width:30px; height:30px;"/>',
-        intro: 'This is the end of the tutorial. You can also watch a 30s video demo video to get a better understanding of Luminate.\
+        intro: '这是教程的结束部分。你也可以观看30秒的演示视频来更好地理解 Luminate。\
         <video width="540px" height="360px" controls>\
           <source src="luminate-video-preview.mp4" type="video/mp4">\
           Your browser does not support the video tag.\

@@ -6,7 +6,7 @@ import DatabaseManager from '../../db/database-manager';
 import './api-input.scss';
 import '../../db/database-manager';
 
-
+//设置按钮
 export function ApiInputModal() {
   const [open, setOpen] = useState(false);
 
@@ -20,7 +20,10 @@ export function ApiInputModal() {
     const batchSize = data.get('batch-size');
     const dimensionSize = data.get('num-dims');
     // save data into env variables
-    saveEnvVal('VITE_OPENAI_API_KEY', apiToken as string);
+    if(apiToken !== "ExampleKey") {
+      //保存LLM的Key，当不是ExampleKey的时候
+      saveEnvVal('VITE_OPENAI_API_KEY', apiToken as string);
+    }
     DatabaseManager.setBatchSize(batchSize as string);
     DatabaseManager.setDimensionSize(dimensionSize as string);
     handleClose();
@@ -63,7 +66,7 @@ export function ApiInputModal() {
               id="openai-api"
               label="Enter your OpenAPI Key"
               name="openai-api"
-              defaultValue={getEnvVal('VITE_OPENAI_API_KEY')}
+              defaultValue={"ExampleKey"}
               autoFocus
             />
             <TextField

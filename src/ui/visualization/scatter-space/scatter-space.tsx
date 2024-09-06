@@ -166,8 +166,8 @@ export const ScatterSpace = ({camera, setCamera}) => {
               key={`${i}-${block.ID}`}
               style={{
                 position: 'absolute',
-                top: (rect?.height??0)/2 + block.y??0,
-                left: (rect?.width??0)/2 + block.x??0,
+                top: ((rect?.height ?? 0) / 2 + (block.y ?? 0)) || 0,
+                left: ((rect?.width ?? 0) / 2 + (block.x ?? 0)) || 0,                
                 // top: block.y??0,//((block.y ?? 0) - prevCursorPosition.y) * zoom + prevCursorPosition.y,
                 // left: block.x??0,//((block.x ?? 0) - prevCursorPosition.x) * zoom + prevCursorPosition.x,
                 // top: ((block.y ?? 0) - cursorPosition.y) * zoom + cursorPosition.y,

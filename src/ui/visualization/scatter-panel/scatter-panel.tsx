@@ -213,6 +213,7 @@ export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
           {
             Object.values(dimensionMap as {[id:string]: Dimension}).map((dimension: Dimension) => (
               <FormControl
+                key={dimension.name} // Add this line
                 style={{
                   background: 'none',
                   backgroundColor: 'none'

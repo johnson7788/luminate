@@ -51,11 +51,11 @@ export const startTutorial = () => {
     tooltipClass: 'tutorialTooltip',
     steps: [
       {
-        title: 'Luminate Tutorial <img src="luminate-logo.png" style="width:30px; height:30px;"/>',
-        intro: '这是一个向导，帮助你熟悉 Luminate 的每个组件并理解系统。'
+        title: '向导 <img src="luminate-logo.png" style="width:30px; height:30px;"/>',
+        intro: '这是一个向导，帮助你熟悉每个组件并理解系统。'
       },
       {
-        title: 'Text Editor',
+        title: '文本编辑器',
         element: document.querySelector('#text-editor-container'),
         intro: "这是文本编辑器，你可以在这里撰写你的Story"
       },
@@ -65,7 +65,7 @@ export const startTutorial = () => {
         intro: "你也可以使用此输入框向 AI 询问创意。AI 会花几秒钟来分析提示的关键属性，并生成多个响应。"
       },
       {
-        title: 'Exploration View',
+        title: '探索视图',
         element: document.querySelector('#my-spaceviz'),
         intro: "这是探索视图，当你向 AI 询问创意时，你可以在此查看多个响应。"
       },

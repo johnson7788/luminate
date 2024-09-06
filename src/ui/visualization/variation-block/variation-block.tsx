@@ -167,7 +167,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
     return <div key={block.ID + 'title'} className={`block block-title ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
       {block.Title}
       <div className="labels">
-          {block.Keywords.map(keyword => <DimensionLabel {...{keyword}} />)}
+          {block.Keywords.map((keyword, index) => <DimensionLabel key={`${block.ID}-keyword-${index}`} {...{keyword}} />)}
       </div>
     </div>;
     // Plan: prerender all the keywords, see if that will make things worse or better???
@@ -180,7 +180,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
         <p className="keywords-title">Keywords:</p>
       </div> */}
       <div className="labels">
-          {block.Keywords.map(keyword => <DimensionLabel {...{keyword}} />)}
+          {block.Keywords.map((keyword, index) => <DimensionLabel key={`${block.ID}-keyword-${index}`} {...{keyword}} />)}
       </div>
       <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
   </div>;
@@ -198,7 +198,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
       {/* Attributes */}
       <p className="summary-title">Attributes:</p>
       <div className="labels">
-        {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
+        {Object.entries(block.Dimension.categorical).map(([key, value],index ) => <DimensionLabel key={`${block.ID}-dimension-${index}`} {...{keyword: `${key} : ${value}`}} />)}
       </div>
       <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
       {/* <DetailsFooter {...{block, onBookmarkHandler, onClickHandler, onSelectedHandler,}} /> */}
@@ -213,7 +213,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
         {/* Attributes */}
         <p className="summary-title">Attributes:</p>
         <div className="labels">
-          {Object.entries(block.Dimension.categorical).map(([key, value]) => <DimensionLabel {...{keyword: `${key} : ${value}`}} />)}
+          {Object.entries(block.Dimension.categorical).map(([key, value], index) => <DimensionLabel key={`${block.ID}-dimension-${index}`} {...{keyword: `${key} : ${value}`}} />)}
         </div>
         <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
       </div>

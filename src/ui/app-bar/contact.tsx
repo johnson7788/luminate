@@ -42,8 +42,7 @@ export function ContactModal() {
         >
           <h4>Contact Us</h4>
           <p className='note'>
-            If you have any questions, comments, or concerns, please reach out to us at  
-            <a href="mailto:luminate.system@gmail.com"> luminate.system@gmail.com</a>
+            Developing More
           </p>
         </Box>
       </Modal>

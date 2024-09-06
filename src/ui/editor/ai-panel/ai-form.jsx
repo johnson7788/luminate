@@ -5,7 +5,7 @@ import * as bootstrap from 'bootstrap';
 
 import * as GPTUtil from '../../../util/gpt-util';
 import * as SpaceUtil from '../../../util/space-generation-util';
-import DatabaseManager from '../../../db/database-manager';
+import DatabaseManager from '../../../db/database-manager'; //DatabaseManager 用来管理数据库操作，例如存储和检索生成的维度数据。
 import useResponseStore from '../../../store/use-response-store';
 import useCurrStore from '../../../store/use-curr-store';
 import useSelectedStore from '../../../store/use-selected-store';
@@ -14,19 +14,19 @@ import useEditorStore from '../../../store/use-editor-store';
 
 import './ai-form.scss'
 
-  
+//使用 React 和 Material-UI 库开发的表单组件 AiForm，其中集成了与 OpenAI 的 GPT 模型通信、数据管理和动态 UI 交互的功能。
 export default function AiForm({responseHandler, selectedContent}) {
-    const [query, setQuery] = useState(selectedContent);        // query is the input from the user
+    const [query, setQuery] = useState(selectedContent);        // 用户输入的查询文本。
     // const [showButtons, setShowButtons] = useState(false);      // showButtons is a boolean to show the buttons, true if response is not empty
-    const aiPanelRef = useRef(null);                            // aiPanelRef is a reference to the AI panel
-    const [isSubmitting, setIsSubmitting] = useState(false);    // isSubmitting is a boolean to check if the form is submitting, true when submitting
+    const aiPanelRef = useRef(null);                            // 引用表单中的 AI 面板元素。
+    const [isSubmitting, setIsSubmitting] = useState(false);    // 用于控制表单提交状态。isSubmitting is a boolean to check if the form is submitting, true when submitting
     let currBlockId = useCurrStore.getState().maxBlockId + 1;   // currBlockId is the id of the new block
     const {response, setResponse, responseId, context} = useResponseStore(); // response is the response from the AI
     const [generationState, setGenerationState] = useState("dimension"); // generationState is the state of the generation, "dimension" or "response"
     const [firstRendered, setFirstRendered] = useState(true);   // firstRendered is a boolean to check if the response is rendered, true when first rendered
     const api = useEditorStore(state => state.api);
     const {selectedResponse, setSelectedResponse} = useSelectedStore();
-
+    //用于动态生成并展示一个 Bootstrap Toast 消息，告诉用户生成了新的维度。
     const addToast = (d) => {
         const toast = document.createElement('div');
         toast.id = 'fav-toast' + d;
@@ -40,7 +40,7 @@ export default function AiForm({responseHandler, selectedContent}) {
         const toastContent = `
         <div class="d-flex">
             <div class="toast-body" id="toast-text-${d}">
-                Generated a new categorical dimension: ${d}
+                生成了1个新的类别维度: ${d}
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -55,24 +55,24 @@ export default function AiForm({responseHandler, selectedContent}) {
     }
     
     
-    // given a query, generate new categorical and numerical dimensions and the combination of the first response
+    // 给定一个查询，生成新的分类和数值维度以及第一个响应的组合。
     async function generateDimensions(query, currBlockId) {
         const res = await GPTUtil.generateDimensions(query, context);
         // res status
         // 0: success
-        // 1: failed to generate dimensions due to failed API call
-        // 2: failed to generate responses due to constant error in parsing API response
+        // 1: 由于 API 调用失败，未能生成维度 
+        // 2: 由于解析 API 响应时发生持续错误，未能生成响应
         if (res.status === 1) {
             console.log("[Error] failed to generate dimensions due to failed API call");
             let toast = new bootstrap.Toast(document.getElementById('error-toast'));
-            document.getElementById('error-toast-text').textContent = "Failed to generate dimensions due to failed API call. Please make sure your API key is correct and try again.";
+            document.getElementById('error-toast-text').textContent = "由于 API 调用失败，未能生成维度。请确保您的 API 密钥正确，然后重试。";
             toast.show();
             return {result: null, status: 1};
         }
         if (res.status === 2) {
             console.log("[Error] failed to generate dimensions due to constant error in parsing API response");
             let toast = new bootstrap.Toast(document.getElementById('error-toast'));
-            document.getElementById('error-toast-text').textContent = "Failed to generate dimensions due to constant error in parsing API response. Please try again.";
+            document.getElementById('error-toast-text').textContent = "由于解析 API 响应时发生持续错误，未能生成维度。请重试。";
             toast.show();
             return {result: null, status: 1};
         }
@@ -123,8 +123,9 @@ export default function AiForm({responseHandler, selectedContent}) {
     }
 
     async function diversifyResponses(currBlockId, query, dims) {
+        //通过用户查询和生成的维度 (dims)，调用 SpaceUtil.buildSpace 创建响应的维度空间。
+        //生成成功后通过 Bootstrap 的 Toast 组件展示一条提示消息，并记录所需时间。
         const startTime = Date.now();
-
         // generate the space
         const num = DatabaseManager.getBatchSize(); //batch size
         const onFinished = await SpaceUtil.buildSpace(currBlockId, dims, num, query, context);
@@ -138,12 +139,16 @@ export default function AiForm({responseHandler, selectedContent}) {
         console.log("Finished generating space", "failed", onFinished["fail_count"], "total", onFinished["total_count"]);
         
     }
-    // when user types in the input box, update the query
+    //  更新用户输入的查询
     const handleInputChange = (e) => {
         setQuery(e.target.value);
     }
 
     // when user submits the query, generate a response
+    // 阻止表单默认行为。
+    // 检查输入的查询是否为空，若为空则显示错误信息。
+    // 调用生成维度的异步函数 generateDimensions，生成成功后调用 diversifyResponses 生成响应。
+    // 最终清空查询并重置提交状态。
     const submitListener = async (e) => {
         e.preventDefault();
         useResponseStore.setState({responseId: null});
@@ -175,7 +180,7 @@ export default function AiForm({responseHandler, selectedContent}) {
         // put the response into the database
         DatabaseManager.postBlock(currBlockId, query, response, responseId);
     }
-
+    //第一个 useEffect 监听 response 的变化，当 AI 生成了新的响应时，会将响应内容插入到编辑器中并重置 responseId。
     useEffect(() => {
         if (response && query !== '') {
             setGenerationState("space");
@@ -186,7 +191,7 @@ export default function AiForm({responseHandler, selectedContent}) {
         }
     }, [response]);
 
-
+    //第二个 useEffect 监听 context 的变化，根据 context 是否为空来控制上下文的显示与隐藏。
     useEffect(() => {
         // when context is not empty, then show the context-div; otherwise,hide it
         if (context !== '') {
@@ -196,8 +201,8 @@ export default function AiForm({responseHandler, selectedContent}) {
             document.getElementById('context-div').classList.remove('show');
         }
     }, [context]);
-
-      const handleResponseFromAiForm = (response) => {
+    //将生成的 AI 响应以块的形式插入到 Editor.js 编辑器中，用于显示用户输入的查询及其相应的 AI 生成结果。
+    const handleResponseFromAiForm = (response) => {
         // Check if the Editor.js instance is available
         try{
             const blockToAdd = {
@@ -218,7 +223,8 @@ export default function AiForm({responseHandler, selectedContent}) {
             console.log("[Error] error when inserting the block", error);
         }
     };
-
+    //功能: 渲染表单，显示上下文信息并让用户输入查询。当 isSubmitting 为 true 时显示加载信息，否则显示输入框和提交按钮。
+    //整个流程包括维度生成、空间生成、响应插入和用户反馈展示。
     return (
         // <div ref={aiPanelRef} style={{ width: '100%' , margin: 'auto'}}>
         <>
@@ -227,7 +233,7 @@ export default function AiForm({responseHandler, selectedContent}) {
             {context}
             <IconButton id="close-button"
                 onClick={() => {
-                    // set context to empty
+                    // 设置上下文为空
                     useResponseStore.setState({context: ''});
                 }}
             >

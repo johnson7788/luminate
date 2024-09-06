@@ -26,9 +26,9 @@ export const ScatterCanvasView = () => {
 
   const [,forceUpdate] = useState(0);
   // NOTE: this is essentially an infinite loop to make state change happen every tick.
-  useEffect(() => {
-    forceUpdate(x => x+1);
-  }, [Object.values(nodeMap)]);
+  // useEffect(() => {
+  //   forceUpdate(x => x+1);
+  // }, [Object.values(nodeMap)]);
 
   // when currentId change, update the nodes
   React.useEffect(() => {

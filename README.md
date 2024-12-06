@@ -1,75 +1,84 @@
-# Luminate: Structured Generation and Exploration of Design Space with Large Language Models for Human-AI Co-Creation
-
+# Luminate
 branch: chinese中文版本
 
-<p align="left">
-<a href="https://luminate-research.netlify.app/" target="_blank"><img src="./public/luminate-interface.png" width="100%" style="vertical-align: middle;" alt="G"></img></a>
-</p>
-
-
-### Try <a href="https://luminate-research.netlify.app/" target="_blank">Demo</a>
-
-For a quick overview, watch this <a href="https://youtu.be/_H8yt2OS7FE?si=UJ7hpb2B7yX4VfVJ" target="_blank">30-sec preview video</a>. 
-
-### Motivation
-
-Thanks to their generative capabilities, generative models are now an invaluable tool for creative tasks. They can instantly generate tens to hundreds of visual & textual outputs, offering an abundant source of inspiration. But are we using them to their full potential? Current interaction paradigms — such as prompt engineering (`enter prompt -> get response -> refine prompt ->  get response -> ... repeat until satisfied`) — guide people to rapidly converge on a set of initial — potentially suboptimal — ideas and refine them instead of using their generative capabilities to bolster our creativity. 
-
-We argue that generative AI models should assist in the generation of the design space — a space of possible ideas — rather than individual artifacts at the early stage of the creative process to empower users and harness the creative potential of AI.
-
-When users prompt, we can generate key dimensions relevant to a task or topic in the prompt (e.g., genre, plot, tone, etc. for writing a story) and then relevant values for these dimensions (e.g., sci-fi, romance, comedy, etc. for genre). Using these LLM-generated dimensions and values, we can generate a number of responses with different dimensional values. This enables the systematic generation of diverse responses/ideas, covering a wide range of possible responses (e.g., sci-fi, romance, comedy). 
-
-To test the feasibility and scalability of this approach, we developed Luminate, an interactive system with novel features to support this proposed interaction paradigm.
-
-(from https://x.com/sangho_suh/status/1718384100330156398)
-
----
-
-For more details, look at our <a href="https://youtu.be/CwVodmRuLds?si=qKHIbdtxWtICXCG8" target="_blank">6-min video</a>, <a href="https://x.com/sangho_suh/status/1718384100330156398" target="_blank">tweet</a>, <a href="https://arxiv.org/abs/2310.12953" target="_blank">paper</a>, or <a href="https://luminate-research.github.io/" target="_blank">project page</a>.
-
-## Installation
-
-If running for the first time, install dependencies (required: node.js v14.17.0):
+## 安装
 
 `npm install`
 
-To run server, write:
-
+启动服务器:
 ```
 npm run dev
 ```
 
-To use OpenAI API, 
+使用 OpenAI API:
 
-1. create `.env` file at the root of the directory.
-2. Add the following in `.env`:
-
+1. 在项目根目录创建 `.env` 文件
+2. 在 `.env` 文件中添加以下内容:
    ```
    VITE_OPENAI_API_KEY = "{YOUR_OPENAI_API_KEY}"
    ```
-3. Replace `{YOUR_OPENAI_API_KEY}` with your openAI API key
+3. 将 `{YOUR_OPENAI_API_KEY}` 替换为您的 OpenAI API 密钥
 
+## package.json 中的主要包和作用
 
-## CHI 2024 Paper
+- **@editorjs/editorjs**: 实现富文本编辑器功能
+- **@mui/material**: Material UI 组件库，用于构建用户界面
+- **axios**: 用于发送 HTTP 请求
+- **d3**: 数据可视化库
+- **openai**: OpenAI API 客户端
+- **react**: 前端框架
+- **zustand**: 状态管理库
+- **vite**: 现代前端构建工具
 
-**Luminate: Structured Generation and Exploration of Design Space with Large Language Models for Human-AI Co-Creation**<br />
-Sangho Suh\*, Meng Chen\*, Bryan Min, Toby Jia-Jun Li, Haijun Xia
+## src 目录结构解释
 
-**Please cite this paper if you used the code or prompts in this repository.**
+```
+src/
+├── App.jsx                # 应用程序主组件
+├── db/                    # 数据库相关
+│   └── database-manager.jsx  # 数据库管理器
+├── main.jsx              # 应用程序入口文件
+├── main.scss             # 全局样式
+├── store/                # 状态管理
+│   ├── use-curr-store.jsx    # 当前状态管理
+│   ├── use-dim-store.jsx     # 维度状态管理
+│   ├── use-editor-store.jsx  # 编辑器状态管理
+│   ├── use-response-store.jsx # 响应状态管理
+│   └── use-selected-store.jsx # 选择状态管理
+├── ui/                   # UI 组件
+│   ├── app-bar/          # 顶部应用栏
+│   ├── editor/           # 编辑器相关组件
+│   │   ├── ai-block/     # AI 块组件
+│   │   ├── ai-panel/     # AI 面板
+│   │   └── text-editor/  # 文本编辑器
+│   ├── hooks/            # 自定义 Hooks
+│   ├── scatter-canvas-view/  # 散点图画布视图
+│   ├── scatter-filter/   # 散点图过滤器
+│   ├── visualization/    # 可视化组件
+│   │   ├── axis/        # 坐标轴组件
+│   │   ├── scatter-panel/  # 散点图面板
+│   │   └── scatter-space/  # 散点图空间
+│   └── welcome-modal/    # 欢迎模态框
+└── util/                 # 工具函数
+    ├── color-util.tsx    # 颜色工具
+    ├── gpt-util.tsx      # GPT 相关工具
+    ├── prompts.tsx       # 提示词管理
+    └── space-generation-util.jsx  # 空间生成工具
+```
 
-> Sangho Suh, Meng Chen, Bryan Min, Toby Jia-Jun Li, and Haijun Xia. 2024. Luminate: Structured Generation and Exploration of Design Space with Large Language Models for Human-AI Co-Creation. In Proceedings of the CHI Conference on Human Factors in Computing Systems (CHI ’24), May 11–16, 2024, Honolulu, HI, USA. ACM, New York, NY, USA, 26 pages. https://dl.acm.org/doi/10.1145/3613904.3642400
+## 主要功能模块
 
-## Bibtex
-    
- ```bibtex
- @article{suh2024luminate,
-   title = {Luminate: Structured Generation and Exploration of Design Space with Large Language Models for Human-AI Co-Creation},
-   author = {Suh, Sangho and Chen, Meng and Min, Bryan and Li, Toby Jia-Jun and Xia, Haijun},
-   booktitle = {Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems},
-   pages = {1--26},
-   year = {2024},
-   url = {https://doi.org/10.1145/3613904.3642400},
-   doi = {10.1145/3613904.3642400}
- }
- ```
+1. **编辑器模块**: 基于 EditorJS 的富文本编辑器，支持 AI 辅助写作
+2. **可视化模块**: 使用 D3.js 实现的数据可视化功能
+3. **AI 集成**: 通过 OpenAI API 提供智能写作建议
+4. **状态管理**: 使用 Zustand 进行全局状态管理
+5. **数据处理**: 包含数据过滤、转换和可视化处理功能
 
+## 开发指南
+
+本项目使用 Vite 作为构建工具，React 作为前端框架。开发时请遵循以下准则：
+
+1. 组件开发遵循 React 函数式组件规范
+2. 样式文件使用 SCSS 编写
+3. 状态管理统一使用 Zustand
+4. 代码提交前进行 ESLint 检查

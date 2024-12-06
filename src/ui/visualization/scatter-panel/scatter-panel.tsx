@@ -14,6 +14,14 @@ import {addNewDimension} from '../../../util/space-generation-util';
 
 import Fuse from 'fuse.js';
 
+//右上角的工具栏
+// 主要的状态管理：
+// 使用 useCurrStore 和 useDimStore 来管理全局状态
+// 本地状态包括搜索查询 query、新维度输入 addDimensionInput 等
+// 样式方面：
+// 使用 Material-UI 的组件和样式系统
+// 包含自定义的样式组件如 KeywordSearch、SearchIconWrapper 等
+// 实现了响应式设计
 
 export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
   const {currBlockId, nodeMap, setNodeMap, dimensionMap, setDimensionMap, setKeywordNodes, addKeywordNode, addFilteredLabel, removeFilteredLabel} = useCurrStore();
@@ -51,6 +59,8 @@ export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
   }
 
   // fuzzy search
+  // 使用 Fuse.js 实现模糊搜索
+  // 可以搜索节点的 Dimension、Result、Summary、Keywords、Title 等字段
   const submitListener = (e) => {
     e.preventDefault();
     if (query === '') {
@@ -89,21 +99,25 @@ export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
       addKeywordNode((result[i].item as any[])['ID'] ?? 0);
     }
   }
-
+  //实现点击外部区域关闭面板的功能。
   useEffect(() => {
     function handleClickOutside(event) {
+      //当面板展开(showFullRow为true)且点击位置不在面板内时
       if (showFullRow && scatterPanelRef.current &&!(scatterPanelRef.current as any)?.contains(event.target)) {
-        toggleShowFullRow();
+        toggleShowFullRow();  // 关闭面板
       }
     }
     // Attach the event listener when the component mounts
+    // 在组件挂载时添加点击监听
     document.addEventListener('mousedown', handleClickOutside);
     // Clean up the event listener when the component unmounts
+    // 在组件卸载时移除监听器以防内存泄漏
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
   
+  //控制界面上三个面板显示状态的切换函数
   const updateToggleFilterState = (toOpen: 'editor' | 'filter' | 'none') => {
     const editorElm = document.getElementById('text-editor-container');
     const filterElm = document.getElementById('scatter-filter-container');
@@ -134,7 +148,7 @@ export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
 
   return (
     <div className='scatter-panel'>
-      {/* Filter Labels */}
+      {/*收缩按钮，把左侧聊天框收进去 */}
       <div className='menu'>
         {
           <IconButton id="collapse-button" type='button' aria-label='hide-bar' onClick={() => {
@@ -191,7 +205,7 @@ export const ScatterPanel = ({updateNodePositions, camera, setCamera}) => {
         </Button>
       </div>
 
-      {/* Filter Dimensions & Labels */}
+      {/* Filter Dimensions & Labels，显示所有维度的下拉选择框*/}
       <div className="filter-dims-labels" id="filter-dims">
         <div className="fab-container-left">
             <Fab size="small" aria-label="add" className="fab" 

@@ -96,7 +96,7 @@ export const ScatterSpace = ({camera, setCamera}) => {
       }}
     >
       {
-        // 当至少有一个维度过滤器开启时，显示"添加更多节点"按钮
+        // 当至少有一个维度过滤器开启时，显示"添加更多节点"按钮, 即给某个维度，进行扩充更多内容
         (!allDimensionFiltersOff(dimensionMap)) &&
         <button className='panel-item' style={{
           height: '42px',
@@ -158,6 +158,11 @@ export const ScatterSpace = ({camera, setCamera}) => {
       {/* <div style={{width: '4px', height: '4px', position: 'absolute', left: cursorPosition.x, top: cursorPosition.y, background: 'red'}}/>
       <div style={{width: '4px', height: '4px', position: 'absolute', left: zoomCenter.x, top: zoomCenter.y, background: 'blue'}}/>
       <div style={{width: '4px', height: '4px', position: 'absolute', left: prevCursorPosition.x, top: prevCursorPosition.y, background: 'green'}}/> */}
+      {/* 首先是画布容器的样式设置：,实现了一个可缩放平移的画布系统
+画布上的每个节点都是绝对定位
+节点位置是相对于容器中心点计算的
+使用了反向缩放来保持节点视觉大小的一致性
+支持节点的颜色变化和动画效果 */}
       <div className='scatter-canvas' id='scatter-canvas' ref={canvasRef} style={{
         position: 'absolute',
         translate: `${camera.x}px ${camera.y}px`,
@@ -170,7 +175,7 @@ export const ScatterSpace = ({camera, setCamera}) => {
         // transform: `translate(${canvasPosition.x}px, ${canvasPosition.y}px) scale(${zoom})`,
       }}>
         {/* <div>
-          hello this is just a body
+          节点的渲染部分：计算节点的位置：容器尺寸的一半 + 节点的偏移量
         </div> */}
         {
           Object.values(nodeMap).map((block:any, i) => {
@@ -185,8 +190,8 @@ export const ScatterSpace = ({camera, setCamera}) => {
                 // left: block.x??0,//((block.x ?? 0) - prevCursorPosition.x) * zoom + prevCursorPosition.x,
                 // top: ((block.y ?? 0) - cursorPosition.y) * zoom + cursorPosition.y,
                 // left: ((block.x ?? 0) - cursorPosition.x) * zoom + cursorPosition.x,
-                scale: ''+(1/camera.z),
-                translate: '-50% -50%',
+                scale: ''+(1/camera.z), //节点大小随画布缩放反向变化，保持视觉大小一致
+                translate: '-50% -50%', // 使节点以其中心点定位
               }}
             >{
               <VariationBlock {...{block, zoom: camera.z, color: nodeColor(block, dimensionsToAxes(dimensions)), scaleIn: camera.z >= prevZoom}}/>

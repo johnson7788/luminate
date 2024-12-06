@@ -16,7 +16,15 @@ import useEditorStore from "../../../store/use-editor-store";
 
 
 export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
-
+  // block: 包含节点数据的对象（标题、内容、关键词等）
+  // zoom: 当前缩放级别，决定显示内容的详细程度
+  // color: 节点的颜色
+  // scaleIn: 布尔值，控制缩放动画方向
+  // zoom <= 1.5: 只显示一个点
+  // zoom <= 3: 显示标题和关键词
+  // zoom <= 7: 显示标题、关键词和详情页脚
+  // zoom <= 12: 显示摘要和结构信息
+  // zoom > 12: 显示完整内容
   const {dimensionMap, selectedLabelIds,  nodeMap, setNodeMap, currBlockId, currDataId, wantedNodes, keywordNodes } = useCurrStore();
   const {responseId, setResponseId} = useResponseStore();
   const {setSelectedResponse} = useSelectedStore();
@@ -162,8 +170,10 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
 // F F F
 
   if (zoom <= 1.5) {
+    //只显示一个带颜色的点
     return <div key={block.ID + 'dot'} className={`block block-dot ${nodeClassName()}`} style={{background: color}} onClick= {()=>onClickHandler(block)}/>
   } else if (zoom <= 3) {
+    //显示标题和关键词标签
     return <div key={block.ID + 'title'} className={`block block-title ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
       {block.Title}
       <div className="labels">
@@ -172,6 +182,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
     </div>;
     // Plan: prerender all the keywords, see if that will make things worse or better???
   } else if (zoom <= 7) {
+    //中等详细程度，显示标题、关键词和底部操作栏
     return <div key={block.ID + 'labels'} className={`block-labels ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
       <div className="centered-title">
         <h6>{block.Title}</h6>
@@ -185,6 +196,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
       <DetailsFooter {...{block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}} />
   </div>;
   } else if (zoom <= 12) {
+    //显示摘要、结构信息和属性
     return <div key={block.ID + 'sum'} className={`block-sum ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
       <div className="centered-title">
         <h6>{block.Title}</h6>
@@ -204,6 +216,7 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
       {/* <DetailsFooter {...{block, onBookmarkHandler, onClickHandler, onSelectedHandler,}} /> */}
     </div>;
   } else {
+    //显示所有内容，包括完整的结果文本
     return <div key={block.ID + 'full'} className={`block-full ${nodeClassName()}`} style={{background: color+'99'}} onClick= {()=>onClickHandler(block)}>
       <div>
         <div className="centered-title">
@@ -220,7 +233,9 @@ export const VariationBlock = ({ block, zoom, color, scaleIn }) => {
     </div>;
   }
 };
-
+//当节点展开时，每个节点下方都会显示一个DetailsFooter组件，包括：
+// 1. 显示更多相似节点的按钮
+// 2. 显示收藏按钮
 const DetailsFooter = ({block, loadingMore, setLoadingMore, onBookmarkHandler, onClickHandler, onSelectedHandler, nodeMap, setNodeMap}) => (
   <div className="details-footer">
     <button onClick={() => {
